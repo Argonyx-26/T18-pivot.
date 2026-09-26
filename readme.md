@@ -1,12 +1,41 @@
 # Aegis CityPulse: Autonomous Incident Vision & Tactical Dispatch Station
 
-**Aegis CityPulse** is an edge-native smart city surveillance and 911 dispatch triage platform engineered for urban traffic corridors. It couples high-throughput edge computer vision (YOLO11x) with an isolated, dark-mode tactical command station (Next.js + Leaflet GIS + Llama 3)[cite: 1]. The platform features kinematic drift tracking to filter crawling vehicles, an automated pre-alert verification state, real-time arterial traffic light preemption ("Force-Green Wave"), and instant local tactical briefings synthesized via Ollama[cite: 1].
+**Aegis CityPulse** is an edge-native smart city surveillance and 911 dispatch triage platform engineered for urban traffic corridors. It couples high-throughput edge computer vision (YOLO11x) with an isolated, dark-mode tactical command station (Next.js + Leaflet GIS + Llama 3). The platform features kinematic drift tracking to filter crawling vehicles, an automated pre-alert verification state, real-time arterial traffic light preemption ("Force-Green Wave"), and instant local tactical briefings synthesized via Ollama.
 
 ---
 
 ## System Flowchart
 
 ```mermaid
+flowchart TD
+    subgraph VisionPipeline["Edge Vision Ingestion & Filtering"]
+        A["CCTV / 1080p Video Feed"] --> B["YOLO11x Neural Detection"]
+        B --> C{"Deformation / Crash Class?"}
+        C -- "No" --> D["Transit Vehicle Tracking & Cyan Bounding Boxes"]
+        C -- "Yes" --> E["Spatial & Kinematic Drift Tracker"]
+        E --> F{"Recent Drift < 12 px & Frames >= 4?"}
+        F -- "2-3 frames" --> G["Status: ANALYZING IMPACT (Amber Pre-Alert)"]
+        F -- ">= 4 frames & at rest" --> H["Status: COLLISION ALERT (Flashing Red)"]
+    end
+
+    subgraph FastTransport["Fast-Transport Telemetry Pipeline"]
+        D --> I["Async MJPEG Streamer (/stream)"]
+        G --> J["Async WebSocket Broadcast (/ws)"]
+        H --> J
+    end
+
+    subgraph CommandStation["Command & Dispatch Workstation"]
+        I --> K["Surveillance View (:3000)"]
+        J --> L["911 Operator Console (:3000/operator)"]
+        L --> M["Leaflet GIS Dark Vector Map"]
+        M --> N["Corridor Signals (SIG-01 to SIG-04)"]
+        M --> O["Inbound Units (EMS-12, Engine-4, Police-201)"]
+        L --> P["Preemption: Engage Force-Green Wave"]
+        P -->|Recalculate Speed & ETA| M
+        H -->|Auto Trigger| Q["Local Ollama Llama 3 API"]
+        Q --> R["3-Bullet Dispatch Brief: Triage, Routing, Staging"]
+        L --> S["Interactive Tactical Copilot Terminal"]
+    end
 flowchart TD
     subgraph Edge Vision Ingestion & Filtering
         A[CCTV / 1080p Video Feed] --> B[YOLO11x Neural Detection]

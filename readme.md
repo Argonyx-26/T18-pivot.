@@ -1,7 +1,5 @@
-Got it — **Team: PIVOT** and **Project: Aegis CityPulse**. Here's the fully updated README in one snippet:
-
 ````markdown
-# 🛡️ Aegis CityPulse — AI-Powered Real-Time Crash Detection & Emergency Monitoring
+#🛡️ Aegis CityPulse — AI-Powered Real-Time Crash Detection & Emergency Monitoring
 
 **Team PIVOT**
 

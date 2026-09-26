@@ -1,100 +1,632 @@
-# Aegis CityPulse: Autonomous Incident Vision & Tactical Dispatch Station
+Got it — **Team: PIVOT** and **Project: Aegis CityPulse**. Here's the fully updated README in one snippet:
 
-**Aegis CityPulse** is an edge-native smart city surveillance and 911 dispatch triage platform engineered for urban traffic corridors. It couples high-throughput edge computer vision (YOLO11x) with an isolated, dark-mode tactical command station (Next.js + Leaflet GIS + Llama 3). The platform features kinematic drift tracking to filter crawling vehicles, an automated pre-alert verification state, real-time arterial traffic light preemption ("Force-Green Wave"), and instant local tactical briefings synthesized via Ollama.
+````markdown
+# 🛡️ Aegis CityPulse — AI-Powered Real-Time Crash Detection & Emergency Monitoring
+
+**Team PIVOT**
+
+Aegis CityPulse is an AI-powered intelligent city surveillance and emergency response system designed to detect road accidents in real time using live CCTV and video feeds.
+
+The system combines **YOLO-based object detection, multi-object tracking, temporal crash analysis, and a real-time command-center dashboard** to identify potential crashes, reduce false positives, and provide emergency monitoring personnel with immediate visual alerts and incident evidence.
 
 ---
 
-## System Flowchart
+## 🎯 Project Objective
 
-```mermaid
-flowchart TD
-    subgraph VisionPipeline["Edge Vision Ingestion & Filtering"]
-        A["CCTV / 1080p Video Feed"] --> B["YOLO11x Neural Detection"]
-        B --> C{"Deformation / Crash Class?"}
-        C -- "No" --> D["Transit Vehicle Tracking & Cyan Bounding Boxes"]
-        C -- "Yes" --> E["Spatial & Kinematic Drift Tracker"]
-        E --> F{"Recent Drift < 12 px & Frames >= 4?"}
-        F -- "2-3 frames" --> G["Status: ANALYZING IMPACT (Amber Pre-Alert)"]
-        F -- ">= 4 frames & at rest" --> H["Status: COLLISION ALERT (Flashing Red)"]
-    end
+Traditional CCTV systems primarily record incidents and rely on human operators to continuously monitor multiple camera feeds.
 
-    subgraph FastTransport["Fast-Transport Telemetry Pipeline"]
-        D --> I["Async MJPEG Streamer (/stream)"]
-        G --> J["Async WebSocket Broadcast (/ws)"]
-        H --> J
-    end
+Aegis CityPulse transforms existing camera infrastructure into an intelligent monitoring system capable of:
 
-    subgraph CommandStation["Command & Dispatch Workstation"]
-        I --> K["Surveillance View (:3000)"]
-        J --> L["911 Operator Console (:3000/operator)"]
-        L --> M["Leaflet GIS Dark Vector Map"]
-        M --> N["Corridor Signals (SIG-01 to SIG-04)"]
-        M --> O["Inbound Units (EMS-12, Engine-4, Police-201)"]
-        L --> P["Preemption: Engage Force-Green Wave"]
-        P -->|Recalculate Speed & ETA| M
-        H -->|Auto Trigger| Q["Local Ollama Llama 3 API"]
-        Q --> R["3-Bullet Dispatch Brief: Triage, Routing, Staging"]
-        L --> S["Interactive Tactical Copilot Terminal"]
-    end
-flowchart TD
-    subgraph Edge Vision Ingestion & Filtering
-        A[CCTV / 1080p Video Feed] --> B[YOLO11x Neural Detection]
-        B --> C{Deformation / Crash Class?}
-        C -- No --> D[Transit Vehicle Tracking & Cyan Bounding Boxes]
-        C -- Yes --> E[Spatial & Kinematic Drift Tracker]
-        E --> F{Recent Drift < 12 px & Persistence >= 4 frames?}
-        F -- 2 to 3 frames --> G[Status: ANALYZING IMPACT - Amber Pre-Alert]
-        F -- 4+ frames & at rest --> H[Status: COLLISION ALERT - Flashing Red]
-    end
+- 🚗 Detecting and tracking vehicles in real time
+- 🧠 Understanding vehicle movement across multiple frames
+- 💥 Detecting potential collisions and road crashes
+- 🎯 Reducing false-positive accident alerts
+- 📹 Streaming live CCTV feeds to a central dashboard
+- 🚨 Generating real-time emergency alerts
+- 📝 Recording crash evidence and timestamps
+- 👮 Providing a centralized city monitoring interface
 
-    subgraph Fast-Transport Telemetry Pipeline
-        D --> I[Async MJPEG Streamer /stream]
-        G --> J[Async WebSocket Broadcast /ws]
-        H --> J
-    end
+---
 
-    subgraph Command & Dispatch Workstation
-        I --> K[Surveillance View: http://localhost:3000]
-        J --> L[911 Operator Console: http://localhost:3000/operator]
-        L --> M[Leaflet GIS Dark Vector Map]
-        M --> N[Corridor Signals SIG-01 to SIG-04]
-        M --> O[Inbound Units EMS-12, Engine-4, Police-201]
-        L --> P[Preemption Engine: Toggle Force-Green Wave]
-        P -->|Recalculate Speed & ETA| M
-        H -->|Auto Trigger| Q[Local Ollama Llama 3 API]
-        Q --> R[3-Bullet Dispatch Brief: Triage, Routing, Staging]
-        L --> S[Interactive Tactical Copilot Terminal]
-    end
+## 🧠 AI Architecture
 
-citypulse/
-├── .gitignore                          # Excludes heavy weights (.pt), video assets (.mp4), .venv, and node_modules
-├── README.md                           # Documentation, operational specifications, and deployment runbook
+```text
+                    LIVE CCTV / VIDEO
+                           │
+                           ▼
+                  ┌─────────────────┐
+                  │   YOLO11 Model  │
+                  │ Object Detection│
+                  └────────┬────────┘
+                           │
+                           ▼
+                  ┌─────────────────┐
+                  │ Vehicle Tracking│
+                  │ ByteTrack /     │
+                  │ DeepSORT        │
+                  └────────┬────────┘
+                           │
+                           ▼
+              ┌──────────────────────────┐
+              │   TEMPORAL ANALYSIS      │
+              │                          │
+              │ • Vehicle Speed          │
+              │ • Relative Velocity      │
+              │ • Direction Change       │
+              │ • Bounding Box Overlap   │
+              │ • Trajectory Intersection│
+              │ • Sudden Deceleration    │
+              │ • Post-Impact Stopping   │
+              └────────────┬─────────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │  Crash Classifier │
+                 │   / Crash Model   │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                  MULTI-FRAME VALIDATION
+                           │
+                           ▼
+                    🚨 CRASH CONFIRMED
+                           │
+              ┌────────────┴────────────┐
+              ▼                         ▼
+       COMMAND CENTER             EVIDENCE STORAGE
+              │                         │
+              ▼                         ▼
+       Live Alert + Feed        Video + Timestamp
+````
+
+---
+
+# ✨ Key Features
+
+## 🚗 Real-Time Object Detection
+
+Aegis CityPulse uses YOLO-based computer vision to identify road users from live camera feeds.
+
+Potentially detected objects include:
+
+* 🚗 Cars
+* 🏍️ Motorcycles
+* 🚌 Buses
+* 🚛 Trucks
+* 🚲 Bicycles
+* 🚶 Pedestrians
+* 🚦 Traffic-related objects
+
+---
+
+## 🎯 Multi-Object Tracking
+
+Each detected vehicle is assigned a unique tracking ID.
+
+Example:
+
+```text
+Vehicle #12
+Vehicle #27
+Vehicle #31
+Vehicle #42
+```
+
+The tracking system follows vehicles across consecutive frames, allowing Aegis CityPulse to analyze movement and behavior over time.
+
+---
+
+# 💥 Intelligent Crash Detection
+
+Aegis CityPulse does **not** trigger an accident alert simply because two vehicles are close to each other.
+
+Instead, the system combines multiple signals:
+
+```text
+Collision
+   +
+Relative Velocity
+   +
+Sudden Deceleration
+   +
+Trajectory Intersection
+   +
+Direction Change
+   +
+Post-Impact Vehicle Behavior
+   +
+Visual Crash Detection
+   +
+Temporal Consistency
+```
+
+Only when sufficient evidence is accumulated does the system classify an event as a confirmed crash.
+
+---
+
+# 🧠 Temporal Validation
+
+Crash detection is performed across multiple frames instead of relying on a single image.
+
+Example:
+
+```text
+Frame 01 → NORMAL
+Frame 02 → NORMAL
+Frame 03 → SUSPICIOUS
+Frame 04 → SUSPICIOUS
+Frame 05 → IMPACT
+Frame 06 → IMPACT
+Frame 07 → VEHICLE STOPS
+
+             ↓
+
+       🚨 CRASH CONFIRMED
+```
+
+This helps reduce false positives caused by:
+
+* Dense traffic
+* Vehicles driving closely
+* Lane changes
+* Overtaking
+* Bounding-box overlap
+* Camera movement
+* Occlusion
+* Sudden but normal braking
+
+---
+
+# 🚨 Real-Time Alert System
+
+When a crash is confirmed, Aegis CityPulse generates an emergency incident.
+
+Example:
+
+```text
+╔══════════════════════════════════╗
+║        🚨 CRASH DETECTED        ║
+╠══════════════════════════════════╣
+║ Camera: CAM-04                  ║
+║ Time: 14:32:18                  ║
+║ Confidence: 92%                 ║
+║                                  ║
+║ Vehicles Involved:              ║
+║ • Vehicle #12                   ║
+║ • Vehicle #27                   ║
+║                                  ║
+║ Status: CRASH CONFIRMED         ║
+║                                  ║
+║ Evidence: SAVED                 ║
+╚══════════════════════════════════╝
+```
+
+The alert is immediately displayed on the monitoring dashboard.
+
+---
+
+# 👮 Aegis CityPulse Command Center
+
+The web interface acts as a centralized monitoring system for city surveillance personnel.
+
+### Dashboard Components
+
+```text
+┌────────────────────────────────────────────────────┐
+│              AEGIS CITYPULSE                      │
+│              CITY COMMAND CENTER                  │
+├────────────────────────────────────────────────────┤
+│                                                    │
+│ 🚨 ACTIVE ALERTS       🚗 ACTIVE VEHICLES         │
+│       02                     47                    │
+│                                                    │
+├───────────────────────────┬────────────────────────┤
+│                           │                        │
+│                           │    🚨 CRASH ALERT     │
+│       LIVE CCTV           │                        │
+│                           │    Camera: CAM-04     │
+│                           │    Confidence: 92%    │
+│                           │                        │
+│                           │    [VIEW EVIDENCE]    │
+│                           │                        │
+├───────────────────────────┴────────────────────────┤
+│                                                    │
+│                  INCIDENT TIMELINE                 │
+│                                                    │
+└────────────────────────────────────────────────────┘
+```
+
+---
+
+# 📹 Live CCTV Streaming
+
+The backend processes the camera feed while simultaneously streaming the processed video to the web dashboard.
+
+The live feed can display:
+
+* Vehicle bounding boxes
+* Tracking IDs
+* Vehicle trajectories
+* Crash confidence
+* Detection status
+* AI processing status
+* Emergency alerts
+* Camera information
+
+---
+
+# 🛠️ Technology Stack
+
+## AI / Computer Vision
+
+* Python
+* OpenCV
+* YOLO11
+* ByteTrack / DeepSORT
+* PyTorch
+* NumPy
+
+## Backend
+
+* Python
+* FastAPI / Flask
+* WebSockets
+* REST APIs
+
+## Frontend
+
+* HTML
+* CSS
+* JavaScript
+* Canvas
+* WebSocket-based live updates
+
+## Storage
+
+* Local video evidence
+* JSON incident logs
+* Crash snapshots
+* Timestamped recordings
+
+---
+
+# 📁 Project Structure
+
+```text
+Aegis-CityPulse/
+│
 ├── backend/
-│   ├── .venv/                          # Python isolated virtual environment
-│   ├── accident_yolo11.pt              # Fine-tuned YOLO11x weights for accident detection (Git-ignored)
-│   ├── crash_sample.mp4                # Local test surveillance footage (Git-ignored)
-│   ├── requirements.txt                # FastAPI, Uvicorn, Ultralytics, OpenCV-Python, HTTPX, NumPy
-│   ├── main.py                         # FastAPI server: MJPEG video streaming, WebSocket broker, API routes
-│   ├── tracker.py                      # SpatialTrack, IOU matching, kinematic drift suppression, bold OpenCV overlays
-│   └── operator_agent.py               # Tactical dispatch state, GIS signal preemption, Ollama Llama 3 summaries
-└── frontend/
-    ├── package.json                    # Next.js 14, React 18, Leaflet, React-Leaflet, Lucide, Tailwind CSS
-    ├── tsconfig.json                   # TypeScript configuration
-    ├── tailwind.config.ts              # Custom cyber dark-mode palette (#06090e, cyan, red, amber)
-    ├── postcss.config.mjs              # PostCSS plugin configurations
-    └── src/
-        └── app/
-            ├── globals.css             # Tailwind base layers, dark OSM tile filters, radar animations
-            ├── layout.tsx              # Root shell, status indicator, global Leaflet CSS imports, top navigation
-            ├── page.tsx                # Surveillance Vision Node: MJPEG live canvas, scrubber, telemetry logs
-            └── operator/
-                ├── page.tsx            # 911 Station: Warning banners, signal toggles, ETAs, Copilot terminal
-                └── TacticalMap.tsx     # Client-side Leaflet GIS component with custom signal lights and dynamic routes
+│   ├── main.py
+│   ├── detector.py
+│   ├── tracker.py
+│   ├── crash_detector.py
+│   ├── video_stream.py
+│   └── alerts.py
+│
+├── models/
+│   ├── yolo11m.pt
+│   └── crash_model.pt
+│
+├── frontend/
+│   ├── index.html
+│   ├── style.css
+│   └── script.js
+│
+├── evidence/
+│   ├── crashes/
+│   ├── snapshots/
+│   └── recordings/
+│
+├── data/
+│   └── incidents.json
+│
+├── requirements.txt
+├── config.py
+└── README.md
+```
 
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
+---
+
+# ⚙️ Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/Aegis-CityPulse.git
+cd Aegis-CityPulse
+```
+
+Create a virtual environment:
+
+```bash
+python -m venv venv
+```
+
+### macOS / Linux
+
+```bash
+source venv/bin/activate
+```
+
+### Windows
+
+```bash
+venv\Scripts\activate
+```
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
+```
 
-# Start FastAPI and Vision Pipeline
-python main.py
+---
+
+# 📦 Dependencies
+
+Example:
+
+```text
+ultralytics
+opencv-python
+numpy
+torch
+torchvision
+fastapi
+uvicorn
+websockets
+python-multipart
+```
+
+Install:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# 🤖 AI Model Setup
+
+Place the required model weights inside:
+
+```text
+models/
+```
+
+Example:
+
+```text
+models/
+├── yolo11m.pt
+└── crash_model.pt
+```
+
+The object-detection model identifies and tracks road users.
+
+The crash model provides an additional visual signal for accident detection.
+
+---
+
+# ▶️ Running Aegis CityPulse
+
+Start the backend:
+
+```bash
+python backend/main.py
+```
+
+Or with FastAPI:
+
+```bash
+uvicorn backend.main:app --host 0.0.0.0 --port 8000
+```
+
+Open the monitoring dashboard:
+
+```text
+http://localhost:8000
+```
+
+---
+
+# 📷 Camera Sources
+
+Aegis CityPulse can process multiple types of video sources.
+
+### Webcam
+
+```python
+SOURCE = 0
+```
+
+### Video File
+
+```python
+SOURCE = "data/test_video.mp4"
+```
+
+### IP Camera / CCTV
+
+```python
+SOURCE = "rtsp://username:password@camera-ip/stream"
+```
+
+---
+
+# 🚨 Crash Confidence Engine
+
+The system calculates a combined crash score rather than relying on a single detection.
+
+Example:
+
+```text
+Collision Score          25%
+Relative Velocity        20%
+Sudden Deceleration      20%
+Trajectory Analysis      15%
+Post-Impact Stop         10%
+Visual Crash Detection   10%
+```
+
+The resulting score determines the system state:
+
+```text
+0.00 ───────── 0.40
+       NORMAL
+
+0.40 ───────── 0.75
+      SUSPICIOUS
+          ↓
+    Keep Monitoring
+
+0.75 ───────── 1.00
+     🚨 CONFIRMED
+```
+
+The threshold and temporal confirmation window can be configured according to the deployment environment.
+
+---
+
+# 🧪 Testing
+
+Aegis CityPulse should be evaluated against a variety of real-world scenarios:
+
+```text
+✓ Normal traffic
+✓ Heavy traffic
+✓ Vehicles overtaking
+✓ Lane changes
+✓ Sudden braking
+✓ Motorcycle passing cars
+✓ Vehicle collisions
+✓ Multi-vehicle collisions
+✓ Night footage
+✓ Low-quality CCTV
+✓ Occluded vehicles
+✓ Camera vibration
+```
+
+The system should be evaluated using both:
+
+* Crash detection rate
+* False-positive rate
+
+---
+
+# 📊 Incident Evidence
+
+For every confirmed incident, Aegis CityPulse can store:
+
+```text
+Incident ID
+Camera ID
+Timestamp
+Crash Confidence
+Vehicle IDs
+Crash Frame
+Snapshot
+Video Clip
+Detection Metadata
+```
+
+Example:
+
+```json
+{
+  "incident_id": "ACP-2026-0042",
+  "camera_id": "CAM-04",
+  "timestamp": "2026-09-26T14:32:18",
+  "confidence": 0.92,
+  "vehicles": [12, 27],
+  "status": "CONFIRMED"
+}
+```
+
+---
+
+# 🔐 Privacy & Local Processing
+
+Aegis CityPulse is designed to support **local AI inference**, allowing video processing to happen directly on the deployment machine without requiring a cloud AI API.
+
+This can reduce:
+
+* Cloud dependency
+* API costs
+* Network latency
+* Continuous video transmission
+
+Deployment should comply with applicable privacy, surveillance, data-retention, and local regulatory requirements.
+
+---
+
+# 🚀 Future Development
+
+* [ ] Multi-camera monitoring
+* [ ] City-wide incident map
+* [ ] GPS-based incident visualization
+* [ ] Crash severity estimation
+* [ ] Automatic emergency response integration
+* [ ] Number plate recognition
+* [ ] Fire/smoke detection
+* [ ] Pedestrian incident detection
+* [ ] Automatic incident video extraction
+* [ ] SMS / Email alerts
+* [ ] Emergency services integration
+* [ ] Edge-device deployment
+* [ ] NVIDIA Jetson optimization
+* [ ] Raspberry Pi optimization
+* [ ] Indian-road-specific dataset
+* [ ] Custom crash-model fine-tuning
+* [ ] Historical incident analytics
+
+---
+
+# 🌆 Vision
+
+Aegis CityPulse aims to transform conventional CCTV infrastructure into an intelligent urban safety network.
+
+Instead of simply recording incidents, the system continuously analyzes city traffic, identifies abnormal events, confirms potential crashes using temporal AI, and brings critical incidents to the attention of monitoring personnel.
+
+```text
+             👁️ SEE
+               ↓
+          🧠 ANALYZE
+               ↓
+          🎯 CONFIRM
+               ↓
+          🚨 ALERT
+               ↓
+          👮 RESPOND
+               ↓
+          🏙️ PROTECT
+```
+
+---
+
+# 👥 Team
+
+## PIVOT
+
+### Project: Aegis CityPulse
+
+**AI-Powered Real-Time Crash Detection & Intelligent City Monitoring**
+
+---
+
+## 📜 License
+
+This project is intended for research, educational, hackathon, and prototype development purposes.
+
+Individual AI models, datasets, libraries, and third-party components used by Aegis CityPulse may have their own licenses. Check the respective licenses before commercial deployment.
+
+---
+
+# 🛡️ Aegis CityPulse
+
+### *See the City. Understand the Event. Enable the Response.*
+
+**Built by Team PIVOT**
+
+```
+```

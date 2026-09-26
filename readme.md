@@ -1,6 +1,44 @@
 # Aegis CityPulse: Intelligent Real-Time Situational Awareness & Tactical Dispatch Command
 
-**Aegis CityPulse** is an edge-native, real-time smart city surveillance and emergency dispatch platform engineered for urban traffic corridors[cite: 11]. Built on a modular client-server architecture, the system combines high-throughput computer vision inference with an isolated 911 tactical dispatch workstation. The vision processing engine leverages an Ultralytics YOLO11x neural network fine-tuned on traffic accident telemetry, executing spatial coordinate tracking, temporal persistence checks, and adaptive kinematic drift analysis to eliminate false positives caused by crawling or decelerating transit vehicles[cite: 1]. Incoming video streams are analyzed at 1080p and broadcast with sub-second latency via non-blocking asynchronous MJPEG frame pipelines and real-time WebSockets. When a confirmed collision or anomaly is locked, telemetry instantly routes to the isolated `/operator` command node, where an interactive GIS tactical vector map renders real-time traffic signal light phases (Red, Amber, Green), preemptive corridor overrides ("Force Green Wave"), and dynamic routing polylines for emergency vehicles (EMS-12, Engine-4, Police-201) with live ETAs. An integrated local Llama 3 LLM agent powered by Ollama automatically generates structured 3-bullet triage briefs—evaluating casualty risk, corridor signal preemption, and unit staging—while serving as an unconstrained interactive copilot for emergency dispatch directors. Designed with Next.js (App Router), TypeScript, and Tailwind CSS, Aegis CityPulse delivers an executive-grade, dark-mode command center interface that unifies real-time edge intelligence, automated triage, and active municipal infrastructure control into a single unified dashboard[cite: 11].
+**Aegis CityPulse** is an edge-native, real-time smart city surveillance and emergency dispatch platform engineered for urban traffic corridors[cite: 11]. Built on a modular client-server architecture, the system combines high-throughput computer vision inference with an isolated 911 tactical dispatch workstation. The vision processing engine leverages an Ultralytics YOLO11x neural network fine-tuned on traffic accident telemetry, executing spatial coordinate tracking, temporal persistence checks, and adaptive kinematic drift analysis to eliminate false positives caused by crawling or decelerating transit vehicles[cite: 1]. Incoming video streams are analyzed at 1080p and broadcast with sub-second latency via non-blocking asynchronous MJPEG frame pipelines and real-time WebSockets. When a confirmed collision or anomaly is locked, telemetry instantly routes to the isolated `/operator` command node, where an interactive GIS tactical vector map renders real-time traffic signal light phases (Red, Amber, Green), preemptive corridor overrides ("Force Green Wave"), and dynamic routing polylines for emergency vehicles (EMS-12, Engine-4, Police-201) with live ETAs. 
+# Aegis CityPulse: Autonomous Incident Vision & Tactical Dispatch Station
+
+**Aegis CityPulse** is an edge-native smart city surveillance and 911 dispatch triage platform engineered for urban traffic corridors. It couples high-throughput edge computer vision (YOLO11x) with an isolated, dark-mode tactical command station (Next.js + Leaflet GIS + Llama 3)[cite: 1]. The platform features kinematic drift tracking to filter crawling vehicles, an automated pre-alert verification state, real-time arterial traffic light preemption ("Force-Green Wave"), and instant local tactical briefings synthesized via Ollama[cite: 1].
+
+---
+
+## System Flowchart
+
+```mermaid
+flowchart TD
+    subgraph Edge Vision Ingestion & Filtering
+        A[CCTV / 1080p Video Feed] --> B[YOLO11x Neural Detection]
+        B --> C{Deformation / Crash Class?}
+        C -- No --> D[Transit Vehicle Tracking & Cyan Bounding Boxes]
+        C -- Yes --> E[Spatial & Kinematic Drift Tracker]
+        E --> F{Recent Drift < 12 px & Persistence >= 4 frames?}
+        F -- 2 to 3 frames --> G[Status: ANALYZING IMPACT - Amber Pre-Alert]
+        F -- 4+ frames & at rest --> H[Status: COLLISION ALERT - Flashing Red]
+    end
+
+    subgraph Fast-Transport Telemetry Pipeline
+        D --> I[Async MJPEG Streamer /stream]
+        G --> J[Async WebSocket Broadcast /ws]
+        H --> J
+    end
+
+    subgraph Command & Dispatch Workstation
+        I --> K[Surveillance View: http://localhost:3000]
+        J --> L[911 Operator Console: http://localhost:3000/operator]
+        L --> M[Leaflet GIS Dark Vector Map]
+        M --> N[Corridor Signals SIG-01 to SIG-04]
+        M --> O[Inbound Units EMS-12, Engine-4, Police-201]
+        L --> P[Preemption Engine: Toggle Force-Green Wave]
+        P -->|Recalculate Speed & ETA| M
+        H -->|Auto Trigger| Q[Local Ollama Llama 3 API]
+        Q --> R[3-Bullet Dispatch Brief: Triage, Routing, Staging]
+        L --> S[Interactive Tactical Copilot Terminal]
+    end
 
 ## Quickstart & Execution Runbook
 
